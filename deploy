@@ -1,0 +1,70 @@
+#!/bin/sh
+
+read -p "Enter your project path :" projectPath
+echo Project path is added 
+
+read -p "Enter the port on which the project is running :" portRunningOn
+echo Port is set 
+
+read -p "Enter the command you want to run :" command
+echo Command is taken
+
+read -p "Is git available for pulling? (Expected answer in Y/N) :" isGitSetUp
+echo User input is recorded 
+
+deploymentCommand() {
+  $command
+}
+
+deployProject() {
+    cd $projectPath
+    if [ isGitSetUp -eq "Y" ] | [ isGitSetUp -eq "y" ]; then
+        git reset --hard
+	if [ $? -ne 0 ] | [ $? -eq 0 ]; then
+	    git pull
+            if [ $? -ne 0 ] | [ $? -eq 0 ]; then
+               echo projectIsRunning
+	       deploymentCommand
+	    else
+	       echo project path incorrect
+       	    fi
+	fi
+    else 
+        echo projectIsRunning
+	deploymentCommand
+    fi
+}
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+	netstat -anp | grep $portRunningOn
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+	netstat -ln | grep $portRunningOn
+elif [[ "$OSTYPE" == "cygwin" ]]; then
+	netstat -anp | grep $portRunningOn
+elif [[ "$OSTYPE" == "msys" ]]; then
+	netstat -a -n -o | find $portRunningOn
+elif [[ "$OSTYPE" == "win32" ]]; then
+	netstat -aof | findstr : $portRunningOn
+elif [[ "$OSTYPE" == "freebsd"* ]]; then
+	sockstat -4 -l | grep :$portRunningOn
+else
+	netstat -anp | grep $portRunningOn
+fi
+
+
+if [ $? -ne 0 ]; then
+   echo Initialising auto restart of your project.
+   echo ..............Deployment Begins Here.............
+
+   npx kill-port $portRunningOn
+   if [ $? -ne 0 ] | [ $? -eq 0 ]; then
+	deployProject
+   fi
+else
+   deployProject  
+fi 
+
+
+
+
+
