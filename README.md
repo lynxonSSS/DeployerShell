@@ -11,10 +11,10 @@ that the project will be started on any port entered.
 
 Options:
 
---help / -H        Print this Help.\n
-\n
--V / --version     Prints the version.\n
--d                 Specify the project root directory.\n
--p                 Specify the port to be killed.\n
--c                 Specify the command to be executed on the root directory specified.\n
--g                 Specify if git is configured or if pull is required.\n
+--help / -H        Print this Help.<br/>
+<br/>
+-V / --version     Prints the version.<br/>
+-d                 Specify the project root directory.<br/>
+-p                 Specify the port to be killed.<br/>
+-c                 Specify the command to be executed on the root directory specified.<br/>
+-g                 Specify if git is configured or if pull is required.<br/>
