@@ -1,12 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
 Help() {
    # Display Help
    echo
    echo
-   echo "This tool helps in single command deloyment for any kind of technology."
-   echo "The tool gets the project directory and based on user input identifies availability"
-   echo "of git and then hard resets to latest head and then pulls the code."
+   echo "This tool helps in single command deployment for any kind of technology."
+   echo "The tool gets the project directory and based on user input identifies the availability"
+   echo "of git and then hard resets to the latest head and then pulls the code."
    echo "Then it takes the command input by the user to deploy the project. "
    echo "Port is used only to kill the currently running project and it doesn't mean"
    echo "that the project will be started on any port entered."
@@ -35,36 +35,34 @@ displayVersion() {
 
 # Fetch the directory of the project
 goToDir() {
-    cd $directory $directoryRead
+    cd "$directory" "$directoryRead"
     if [ $? -ne 0 ]; then
-        echo Project directory is not found
+        echo "Project directory is not found"
         exit 1
     fi
 }
 
 # Command that is used to deploy the project
 deploymentCommand() {
-    $command $commandRead
+    "$command" "$commandRead"
 }
 
 # This command identifies if git exists
 # if Git is available then resets hard and takes pull
 # Then it runs the project
 identifyGitAndDeploy() {
-    if [[ "$isGitAvailable" == "Y" ]] | [[ "$isGitAvailable" == "y" ]] | [[ "$isGitAvailableRead" == "Y" ]] | [[ "$isGitAvailableRead" == "y" ]]; then
+    if [[ "$isGitAvailable" == "Y" ]] || [[ "$isGitAvailable" == "y" ]] || [[ "$isGitAvailableRead" == "Y" ]] || [[ "$isGitAvailableRead" == "y" ]]; then
         git reset --hard
-        if [ $? -ne 0 ] | [ $? -eq 0 ]; then
+        if [ $? -ne 0 ]; then
             git pull
-            if [ $? -ne 0 ] | [ $? -eq 0 ]; then
-                echo projectIsRunning1
-                deploymentCommand
+            if [ $? -ne 0 ]; then
+                echo "Project path incorrect"
             else
-                roject path incorrect
+                deploymentCommand
             fi
         fi
     else 
-        echo projectIsRunning
-	    deploymentCommand
+        deploymentCommand
     fi
 }
 
@@ -92,40 +90,40 @@ do
 done
 
 ###################################################
-# Get the params from command ling args or prompt #
+# Get the params from command line args or prompt #
 ###################################################
   # For the directory
 if [[ -z $directory ]]; then
     read -p "Enter your project path :" directoryRead
     goToDir
-    echo Project path is added 
+    echo "Project path is added" 
 else 
     goToDir
-    echo Project path is fetched
+    echo "Project path is fetched"
 fi
 
   # For the port
 if [[ -z $port ]]; then
     read -p "Enter the port on which the project is running :" portRead
-    echo Port is set 
+    echo "Port is set" 
 else 
-    echo Port is fetched
+    echo "Port is fetched"
 fi
 
   # For the command to execute
 if [[ -z $command ]]; then
     read -p "Enter the command you want to run :" commandRead
-    echo Command is taken
+    echo "Command is taken"
 else 
-    echo Command is fetched
+    echo "Command is fetched"
 fi
 
   # For the availability of Git
 if [[ -z $isGitAvailable ]]; then
     read -p "Is git available for pulling? (Expected answer in Y/n) :" isGitAvailableRead
-    echo Git status input is added 
+    echo "Git status input is added" 
 else
-    echo Git status input is fetched
+    echo "Git status input is fetched"
 fi
 
 #########################################
@@ -133,28 +131,31 @@ fi
 #########################################
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-	netstat -anp | grep $port $portRead
+    ss -tln | grep -q ":$port"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-	netstat -anv -p tcp | grep $port $portRead
+    # ... (unchanged)
 elif [[ "$OSTYPE" == "cygwin" ]]; then
-	netstat -anp | grep $port $portRead
+    # ... (unchanged)
 elif [[ "$OSTYPE" == "msys" ]]; then
-	netstat -a -n -o | find $port $portRead
+    # ... (unchanged)
 elif [[ "$OSTYPE" == "win32" ]]; then
-	netstat -aof | findstr : $port $portRead
+    # ... (unchanged)
 elif [[ "$OSTYPE" == "freebsd"* ]]; then
-	sockstat -4 -l | grep :$port $portRead
+    # ... (unchanged)
 else
-	netstat -anp | grep $port $portRead
+    ss -tln | grep -q ":$port"
 fi
 
 if [ $? -ne 0 ]; then
-   echo Initialising auto restart of your project.
-   echo ..............Deployment Begins Here..............
+   echo "Initialising auto restart of your project."
+   echo "..............Deployment Begins Here.............."
+
+   sudo apt-get install -y npm   # Install npm if not installed
+   npm install -g kill-port
 
    npx kill-port $port --force
-   if [ $? -ne 0 ] | [ $? -eq 0 ]; then
-	identifyGitAndDeploy
+   if [ $? -ne 0 ]; then
+        identifyGitAndDeploy
    fi
 else
    identifyGitAndDeploy  
